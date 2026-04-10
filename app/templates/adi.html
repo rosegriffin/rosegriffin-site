@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../static/style.css">
+    <title>American Dialect Identification</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <!-- Upload form -->
+        <form method="POST" enctype="multipart/form-data">
+          <label for="audio"> Upload audio: </label>
+          <input type="file" name="audio" id="audio" accept=".mp3, .wav" multiple/>
+
+          <label for="model_selection"> Select model: </label>
+          <select name="model_selection" id="model_selection">
+            <option value="wav2vec_lr"> wav2vec_lr </option>
+          </select>
+
+          <input type="submit" name="upload" value="Upload"/>
+        </form>
+      </div>
+
+      <div class="right-panel">
+        <!-- Model output -->
+        {% if result %}
+          <p> {{ result[0] }} </p>
+          <p> {{ result[1] }} </p>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
