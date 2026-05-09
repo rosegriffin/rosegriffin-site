@@ -4,11 +4,13 @@
     <meta charset="utf-8">
     <link rel="stylesheet" href="../static/style.css">
     <title>American Dialect Identification</title>
+    <script> window.probabilities = {{ probabilities | tojson }}; </script>
+    <script src="{{ url_for('static', filename='js/adi-map.js') }}"></script>
   </head>
 
   <body>
     <div class="container">
-      <div class="left-panel">
+      <div class="card">
         <!-- Upload form -->
         <form method="POST" enctype="multipart/form-data">
           <label for="audio"> Upload audio: </label>
@@ -23,13 +25,18 @@
         </form>
       </div>
 
-      <div class="right-panel">
-        <!-- Model output -->
-        {% if result %}
-          <p> {{ result[0] }} </p>
-          <p> {{ result[1] }} </p>
-        {% endif %}
+      <div class="card map-container">
+        Overall region: {% if result %} {{ result }} {% endif %}
+        {% include "adi_usa_map.svg" %}
+      </div>
+
+      <div class="card graph-container">
+        Model Predictions by Region
+        {{ chart|safe }}
       </div>
     </div>
+
+    <div id="map-tooltip"></div>
+
   </body>
 </html>

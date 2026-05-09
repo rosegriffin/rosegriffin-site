@@ -1,19 +1,59 @@
-.container {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
+
+:root {
+    --heat-color: 138, 31, 160;
 }
 
-.left-panel {
-    flex: 1;
-}
-
-.right-panel {
-    flex: 2;
+body {
+    background: #F5F5F8;
+    font-family: sans-serif;
 }
 
 form {
     display: flex;
     flex-direction: column;
     gap: 15px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px;
+}
+
+.map-container svg {
+    width: 100%;
+    height: auto;
+}
+
+.graph-container {
+    flex: 0 0 500px;
+}
+
+/* Map customization */
+
+#_State_borders {
+  stroke: #5B1778 !important;
+}
+
+#county-group path {
+    stroke: #5B1778 !important;
+}
+
+#map-tooltip {
+    position: fixed;
+    background: rgba(21, 6, 36, 0.80);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 9999;
 }
