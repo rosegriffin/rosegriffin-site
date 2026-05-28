@@ -2,7 +2,7 @@ import requests
 from pathlib import Path
 from flask import Flask, render_template
 
-from app.config import MODEL_CONFIG
+from app.config import MODEL_CONFIG, APP_SECRET_KEY
 from app.routes.home import home_bp
 from app.routes.adi import adi_bp
 
@@ -16,6 +16,7 @@ def download_file(url, dest):
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
+    app.secret_key = APP_SECRET_KEY
 
     model_dir = Path(app.instance_path) / "models"
     model_dir.mkdir(parents=True, exist_ok=True)

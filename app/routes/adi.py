@@ -2,7 +2,7 @@ import io
 import librosa
 import numpy as np
 from pathlib import Path
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, flash
 from werkzeug.utils import secure_filename
 import plotly.graph_objects as go
 
@@ -24,6 +24,7 @@ MODEL_COMPONENTS = {"wav2vec_lr": {"model": "lr.pkl",
 def extension_allowed(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# TODO: do not decode entire file. Perhaps enforce a limit on size.
 def is_audio(file):
     try:
         y, sr = librosa.load(io.BytesIO(file.read()), sr=None)
@@ -32,9 +33,6 @@ def is_audio(file):
     except:
         file.seek(0)
         return False
-
-
-    return fig.to_html(full_html=False)
 
 def label_to_name(label):
     mapping = {
@@ -62,6 +60,7 @@ def format_results(probs):
     return labels, probs
 
 def create_chart(labels, probs):
+
     fig = go.Figure(go.Bar(
         x=probs,
         y=labels,
@@ -70,7 +69,7 @@ def create_chart(labels, probs):
         hoverinfo="x"
     ))
 
-    fig.update_yaxes(title="Dialect Region", autorange="reversed")
+    fig.update_yaxes(autorange="reversed")
 
     fig.update_layout(
         autosize=True,
@@ -80,7 +79,7 @@ def create_chart(labels, probs):
         font_color="black",
         margin=dict(t=0),
         showlegend=False,
-        bargap=0.35,
+        bargap=0.15,
     )
 
     fig.update_xaxes(
@@ -95,7 +94,7 @@ def create_chart(labels, probs):
 def adi():
 
     result = None # overall dialect
-    chart = None
+    chart = create_chart(*format_results([0, 0, 0, 0, 0, 0, 0]))
     probs = None
     extractor = None
     model_dir = Path(current_app.instance_path) / "models"
@@ -114,13 +113,13 @@ def adi():
 
                 sample_paths.append(filepath)
             else:
-                result = ("Invalid file", file.filename)
+                flash(f'{file.filename} is not a valid WAV file.', "error")
 
         # Handle model selection
         selected_model = request.form.get("model_selection")
 
         if selected_model not in MODEL_COMPONENTS:
-            result = ("Invalid model selection", selected_model)
+            flash(f'{selected_model} is an invalid model.', "error")
         else:
             model_path = model_dir / MODEL_COMPONENTS[selected_model]["model"]
             scaler_path = model_dir / MODEL_COMPONENTS[selected_model]["scaler"]
