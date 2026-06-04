@@ -1,7 +1,8 @@
 import io
-import librosa
 import numpy as np
+import wave
 from pathlib import Path
+from enum import IntEnum
 from flask import Blueprint, render_template, request, current_app, flash
 from werkzeug.utils import secure_filename
 import plotly.graph_objects as go
@@ -15,24 +16,53 @@ UPLOAD_FOLDER.mkdir(exist_ok=True)
 
 adi_bp = Blueprint("adi", __name__)
 
-ALLOWED_EXTENSIONS = {"mp3", "wav"}
+ALLOWED_EXTENSIONS = {"wav"}
+MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
 MODEL_COMPONENTS = {"wav2vec_lr": {"model": "lr.pkl",
                                    "scaler": "wav2vec_scaler.pkl",
                                    "extractor": Wav2VecFeatureExtractor()}
                    }
 
-def extension_allowed(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+class ValResult(IntEnum):
+    VALID = 0
+    FILE_TOO_LARGE = 1
+    INVALID_WAV = 2
 
-# TODO: do not decode entire file. Perhaps enforce a limit on size.
-def is_audio(file):
+# NOTE: Does not accept sphere
+def is_valid_audio(file):
+    original_pos = file.tell()
+
     try:
-        y, sr = librosa.load(io.BytesIO(file.read()), sr=None)
+        # Check file size
+        file.seek(0, 2) # end of file
+        size = file.tell()
+
+        if size > MAX_FILE_SIZE:
+            return ValResult.FILE_TOO_LARGE
+
         file.seek(0)
-        return True
-    except:
+
+        # Verify WAV signature
+        header = file.read(12)
+
+        if (len(header) < 12 or header[:4] != b"RIFF" or header[8:12] != b"WAVE"):
+            return ValResult.INVALID_WAV
+
         file.seek(0)
-        return False
+
+        # Verify WAV structure
+        with wave.open(file, "rb") as wav:
+            wav.getnchannels()
+            wav.getframerate()
+            wav.getnframes()
+
+        return ValResult.VALID
+
+    except (wave.Error, EOFError):
+        return ValResult.INVALID_WAV
+
+    finally:
+        file.seek(original_pos)
 
 def label_to_name(label):
     mapping = {
@@ -105,13 +135,16 @@ def adi():
 
         # Verify and process samples
         for file in files:
-            if extension_allowed(file.filename) and is_audio(file):
+            valresult = is_valid_audio(file)
+            if valresult == ValResult.VALID:
                 # save to temp folder
                 filename = secure_filename(file.filename)
                 filepath = UPLOAD_FOLDER / filename
                 file.save(filepath)
 
                 sample_paths.append(filepath)
+            elif valresult == ValResult.FILE_TOO_LARGE:
+                flash(f'{file.filename} is {MAX_FILE_SIZE / 1024 / 1024} MB or over', "error")
             else:
                 flash(f'{file.filename} is not a valid WAV file.', "error")
 
