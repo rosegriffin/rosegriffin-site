@@ -108,6 +108,11 @@ async function startRecording() {
         return;
     }
 
+    if (!navigator.mediaDevices?.getUserMedia) {
+        alert(BROWSER_ALERT);
+        return;
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({audio: true});
 
     recorder = new MediaRecorder(stream);

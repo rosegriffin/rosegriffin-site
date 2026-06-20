@@ -20,7 +20,8 @@ const toggleButton = document.getElementById("toggle-form");
 const INVALID_FILE_ALERT = "Only .wav files are allowed.";
 const MAX_FILES_ALERT = "You can only have a maximum of 2 audio files.";
 const NO_FILES_ALERT = "Please select at least one valid .wav file.";
-const RECORDING_ALERT = "Please stop your recording before submitting."
+const RECORDING_ALERT = "Please stop your recording before submitting.";
+const BROWSER_ALERT = "Audio recording is not supported in this browser.";
 
 let selectedFiles = [];
 
@@ -164,7 +165,7 @@ uploadBtn.addEventListener("click", (e) => {
         return;
     }
 
-    if (recorder && recorder.state === "recording") {
+    if (recorder?.state === "recording") {
         e.preventDefault();
         alert(RECORDING_ALERT);
         return;
