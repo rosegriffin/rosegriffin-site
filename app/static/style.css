@@ -17,7 +17,11 @@
 
     --c-border: #C9C9C9;
     --c-error-light: #F1C6CB;
-    --c-errors: #E23941;
+    --c-red: #E23941;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -42,14 +46,20 @@ form {
     gap: .5rem;
     padding: .5rem .8rem;
     border-radius: .5rem;
-    border: 1px solid var(--c-error);
+    border: 1px solid var(--c-red);
     background: var(--c-error-light);
-    color: var(--c-error);
+    color: var(--c-red);
 }
 
 .icon {
     width: 1.5rem;
     height: 1.5rem;
+    flex: 0 0 auto;
+}
+
+.icon-small {
+    width: 1rem;
+    height: 1rem;
     flex: 0 0 auto;
 }
 
@@ -75,6 +85,50 @@ form {
 }
 
 /* === AUDIO UPLOAD FORM === */
+
+/* --- Audio mode selection tabs --- */
+
+.audio-mode-selector {
+    display: flex;
+    border-bottom: .1rem solid var(--c-border);
+}
+
+.audio-tab {
+    background: none;
+    border: none;
+    padding: .75rem 1rem;
+    cursor: pointer;
+    color: var(--c-text);
+}
+
+.audio-tab.active {
+    font-weight: 600;
+    border-bottom: .15rem solid var(--c-accent);
+    margin-bottom: -.1rem;
+}
+
+/* --- header --- */
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    gap: 1rem;
+    padding: .5rem .8rem;
+}
+
+#collapse-btn {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+/* --- Upload --- */
+
+#form-container {
+    flex: 0 0 27rem;
+}
 
 .button {
     border-radius: .5rem;
@@ -116,25 +170,50 @@ form {
     background-color: var(--c-accent-hover);
 }
 
-#btn-cancel {
+.btn-secondary {
     background-color: var(--c-surface);
     border: .1rem solid var(--c-border);
     color: black;
 }
 
-#btn-cancel:hover {
+.btn-secondary:hover {
     background-color: var(--c-surface-hover);
-}
-
-.form-container {
-    width: 25rem;
-    flex: 0 0 25rem;
 }
 
 .btn-container {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
+}
+
+/* --- Record --- */
+
+.record-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: .1rem solid var(--c-border);
+    border-radius: .5rem;
+    padding: 2rem;
+    gap: .5rem;
+}
+
+#record-button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+}
+
+#record-button.recording {
+    color: var(--c-surface);
+    background: var(--c-red);
+}
+
+#record-time {
+    font-size: .9rem;
+    color: var(--c-text-secondary);
 }
 
 /* --- File card --- */
@@ -156,6 +235,7 @@ form {
 
 .file-card div {
     flex: 1;
+    width: 0;
     font-size: 0.9rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -177,9 +257,15 @@ form {
     opacity: 1;
 }
 
+small {
+    color: var(--c-text-secondary);
+}
+
 /* === MAP === */
 
-.map-container svg {
+#map-container svg {
+    width: 100%;
+    height: auto;
 }
 
 #_State_borders {
@@ -204,6 +290,74 @@ form {
 
 /* === GRAPH === */
 
-.graph-container {
+#graph-container {
+    height: auto;
 }
 
+/* === VISIBILITY === */
+
+.hidden {
+    display: none;
+}
+
+.mobile-only {
+    display: none;
+}
+
+/* === MOBILE === */
+@media (max-width: 900px) {
+
+    .container {
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    #form-container {
+        flex: 0 0 auto;
+    }
+
+    #form-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    .mobile-hidden {
+        display: none;
+    }
+
+    .file-card {
+        flex-wrap: wrap;
+    }
+
+    /* first row */
+    .file-card > .icon:first-child {
+        order: 1;
+    }
+
+    .file-card > div {
+        order: 2;
+    }
+
+    .file-card > .cancel-icon {
+        order: 3;
+    }
+
+    /* second row */
+    .file-card > audio {
+        order: 4;
+        width: 100%;
+        flex: 0 0 100%;
+    }
+
+}

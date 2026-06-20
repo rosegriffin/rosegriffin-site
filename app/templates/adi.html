@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/style.css">
     <title>American Dialect Identification</title>
     <script> window.probabilities = {{ probabilities | tojson }}; </script>
@@ -21,51 +22,80 @@
     {% endwith %}
 
     <div class="container">
-      <div class="card form-container">
-        <p>
-          Discover which American dialect your speech most closely resembles. This tool analyzes short audio recordings to estimate your overall regional dialect and provides probability estimates across regions.
-          <br><br>
-          To try it, record yourself reading one or both of the following prompts:
-        </p>
+      <div class="card" id="form-container">
 
-        <ul>
-          <li> “She had your dark suit in greasy wash water all year.” </li>
-          <li> “Don't ask me to carry an oily rag like that.” </li>
-        </ul>
+        <div class="card-header mobile-only" id="form-header">
+          {% if submitted %}
+            <button id="collapse-btn">
+              <img src="/static/icons/arrow_right.svg" class="icon" id="right-icon">
+              <img src="/static/icons/arrow_down.svg" class="icon hidden" id="down-icon">
+            </button>
+          {% endif %}
+          <span>Audio Input</span>
+        </div>
 
-        <!-- Upload form -->
-        <form method="POST" enctype="multipart/form-data">
+        <div id="card-body" class="{% if submitted %}mobile-hidden{% endif %}">
+          <p>
+            Discover which American dialect your speech most closely resembles. This tool analyzes short audio recordings to estimate your overall regional dialect and provides probability estimates across regions.
+            <br><br>
+            To try it, record yourself reading one or both of the following prompts. Record them separately and do not enunciate.
+          </p>
 
-          <label for="model_selection"> Select model: </label>
-          <select name="model_selection" id="model_selection" class="dropdown">
-            <option value="wav2vec_lr"> wav2vec_lr </option>
-          </select>
+          <ul>
+            <li> “She had your dark suit in greasy wash water all year.” </li>
+            <li> “Don't ask me to carry an oily rag like that.” </li>
+          </ul>
 
-          <div class="upload-box" id="upload-box">
-            <input type="file" id="audio-input" name="audio" accept=".wav" multiple hidden/>
-            <label for="audio-input" class="upload-label">
-                <div><strong> Click to upload or drop files here </strong></div>
-                <small> Accepted format: .wav </small>
-            </label>
-          </div>
+          <!-- Upload form -->
+          <form method="POST" enctype="multipart/form-data">
 
-          <div id="file-list"></div>
+  <!--          <label for="model_selection"> Select model: </label>
+            <select name="model_selection" id="model_selection" class="dropdown">
+              <option value="wav2vec_lr"> wav2vec_lr </option>
+            </select>-->
 
-          <div class="btn-container">
-            <input type="reset" class="button" id="btn-cancel" name="cancel" value="Cancel"/>
-            <input type="submit" class="button" id="btn-upload" name="upload" value="Upload"/>
-          </div>
+            <div class="audio-mode-selector">
+                <button type="button" id="record-tab" class="audio-tab active"> Record </button>
+                <button type="button" id="upload-tab" class="audio-tab"> Upload </button>
+            </div>
 
-        </form>
+            <div class="upload-box hidden" id="upload-box">
+              <img src="/static/icons/upload_file.svg" class="icon">
+              <input type="file" id="audio-input" name="audio" accept=".wav" multiple hidden/>
+              <label for="audio-input" class="upload-label">
+                  <div class="desktop-only"><strong> Drag files here or click to browse </strong></div>
+                  <div class="mobile-only"><strong> Tap to select WAV files </strong></div>
+                  <small class="desktop-only"> Accepted format: .wav </small>
+              </label>
+            </div>
+
+            <div class="record-box" id="record-box">
+                <button type="button" class="button btn-secondary" id="record-button">
+                  <img src="/static/icons/mic.svg" class="icon-small" id="record-icon">
+                  <img src="/static/icons/stop_circle.svg" class="icon-small hidden" id="stop-icon">
+                  <span id="record-text"> Start Recording </span>
+                </button>
+
+                <div id="record-time"> 00:00 / 00:10 </div>
+            </div>
+
+            <div id="file-list"></div>
+
+            <div class="btn-container">
+              <input type="submit" class="button" id="btn-upload" name="upload" value="Submit"/>
+            </div>
+
+          </form>
+        </div>
       </div>
 
-      <div class="card map-container flex-1">
-        <p style="text-align: center"> Overall region: {% if result %} {{ result }} {% endif %} </p>
+      <div class="card flex-1 {% if not submitted %}mobile-hidden{% endif %}" id="map-container">
+        <div class="card-header"> <span> Overall Region: {% if result %} {{ result }} {% endif %} </span> </div>
         {% include "adi_usa_map.svg" %}
       </div>
 
-      <div class="card graph-container flex-2">
-        <p style="text-align: center"> Model Predictions by Region </p>
+      <div class="card flex-1 {% if not submitted %}mobile-hidden{% endif %}" id="graph-container">
+         <div class="card-header"> <span> Model Predictions by Region </span> </div>
         {{ chart|safe }}
       </div>
     </div>
@@ -82,6 +112,7 @@
 
     <div id="map-tooltip"></div>
 
-    <script src="{{ url_for('static', filename='js/adi-audio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/adi-form-controls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/adi-audio-record.js') }}"></script>
   </body>
 </html>

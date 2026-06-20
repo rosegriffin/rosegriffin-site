@@ -17,7 +17,7 @@ UPLOAD_FOLDER.mkdir(exist_ok=True)
 adi_bp = Blueprint("adi", __name__)
 
 ALLOWED_EXTENSIONS = {"wav"}
-MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 25 MB
 MODEL_COMPONENTS = {"wav2vec_lr": {"model": "lr.pkl",
                                    "scaler": "wav2vec_scaler.pkl",
                                    "extractor": Wav2VecFeatureExtractor()}
@@ -118,7 +118,7 @@ def create_chart(labels, probs):
         gridcolor="rgba(0,0,0,0.05)"
     )
 
-    return fig.to_html(full_html=False, config={"responsive": True})
+    return fig.to_html(full_html=False, config={"responsive": True, "displayModeBar": False})
 
 @adi_bp.route("/american-dialect-identification", methods=["GET", "POST"])
 def adi():
@@ -127,6 +127,7 @@ def adi():
     chart = create_chart(*format_results([0, 0, 0, 0, 0, 0, 0]))
     probs = None
     extractor = None
+    submitted = False
     model_dir = Path(current_app.instance_path) / "models"
 
     if request.method == "POST":
@@ -149,7 +150,8 @@ def adi():
                 flash(f'{file.filename} is not a valid WAV file.', "error")
 
         # Handle model selection
-        selected_model = request.form.get("model_selection")
+        # selected_model = request.form.get("model_selection")
+        selected_model = "wav2vec_lr";
 
         if selected_model not in MODEL_COMPONENTS:
             flash(f'{selected_model} is an invalid model.', "error")
@@ -168,9 +170,11 @@ def adi():
             probs = dict(zip(*format_results(probs)))
 
             result = label_to_name(dialect)
+            submitted = True
 
         # clean up
         for path in sample_paths:
             path.unlink(missing_ok=True)
 
-    return render_template("adi.html", result=result, chart=chart, probabilities=probs)
+
+    return render_template("adi.html", result=result, chart=chart, probabilities=probs, submitted=submitted)

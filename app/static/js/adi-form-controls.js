@@ -3,10 +3,59 @@ const fileList = document.getElementById("file-list");
 const resetBtn = document.getElementById("btn-cancel");
 const uploadBtn = document.getElementById("btn-upload");
 const uploadBox = document.getElementById("upload-box");
+const recordBox = document.getElementById("record-box");
+
+const recordTab = document.getElementById("record-tab");
+const uploadTab = document.getElementById("upload-tab");
+
+const formHeader = document.getElementById("form-header");
+const collapseBtn = document.getElementById("collapse-btn");
+const cardBody = document.getElementById("card-body");
+const rightIcon = document.getElementById("right-icon");
+const downIcon = document.getElementById("down-icon");
+
+const resultsContainer = document.getElementById("results-container");
+const toggleButton = document.getElementById("toggle-form");
 
 const INVALID_FILE_ALERT = "Only .wav files are allowed.";
-const MAX_FILES_ALERT = "You can upload a maximum of 2 .wav files.";
+const MAX_FILES_ALERT = "You can only have a maximum of 2 audio files.";
 const NO_FILES_ALERT = "Please select at least one valid .wav file.";
+const RECORDING_ALERT = "Please stop your recording before submitting."
+
+let selectedFiles = [];
+
+/* Tab functionality */
+
+recordTab.addEventListener("click", () => {
+    recordTab.classList.add("active");
+    uploadTab.classList.remove("active");
+    uploadBox.classList.add("hidden");
+    recordBox.classList.remove("hidden");
+
+});
+
+uploadTab.addEventListener("click", () => {
+    uploadTab.classList.add("active");
+    recordTab.classList.remove("active");
+    recordBox.classList.add("hidden");
+    uploadBox.classList.remove("hidden");
+});
+
+/* Collapse functionality */
+
+if (collapseBtn) {
+    collapseBtn.addEventListener("click", () => {
+        cardBody.classList.toggle("mobile-hidden");
+        rightIcon.classList.toggle("hidden");
+        downIcon.classList.toggle("hidden");
+    });
+}
+
+/* Audio validation and display */
+
+function isValidWav(file) {
+    return file.name.toLowerCase().endsWith(".wav")
+}
 
 function syncInputFiles() {
     const dataTransfer = new DataTransfer();
@@ -60,29 +109,27 @@ function displayFiles(files) {
     });
 }
 
-function isValidWav(file) {
-    return file.name.toLowerCase().endsWith(".wav")
-}
-
-fileInput.addEventListener("change", () => {
-    const files = Array.from(fileInput.files);
+function addFiles(files) {
     const validFiles = files.filter(isValidWav);
 
     if (validFiles.length === 0) {
         alert(NO_FILES_ALERT);
-        fileInput.value = "";
         return;
     }
 
-    if (validFiles.length > 2) {
+    if (selectedFiles.length + validFiles.length > 2) {
         alert(MAX_FILES_ALERT);
-        fileInput.value = "";
         return;
     }
 
-    selectedFiles = validFiles;
+    selectedFiles = [...selectedFiles, ...validFiles];
+
     syncInputFiles();
     displayFiles(selectedFiles);
+}
+
+fileInput.addEventListener("change", () => {
+    addFiles(Array.from(fileInput.files));
 });
 
 uploadBox.addEventListener("click", () => {
@@ -96,28 +143,7 @@ uploadBox.addEventListener("dragover", (e) => {
 uploadBox.addEventListener("drop", (e) => {
     e.preventDefault();
 
-    const files = Array.from(e.dataTransfer.files);
-    const validFiles = files.filter(isValidWav);
-
-    if (validFiles.length === 0) {
-        alert(NO_FILES_ALERT);
-        return;
-    }
-
-    if (validFiles.length > 2) {
-        alert(MAX_FILES_ALERT);
-        return;
-    }
-
-    selectedFiles = validFiles;
-    syncInputFiles();
-    displayFiles(selectedFiles);
-});
-
-resetBtn.addEventListener("click", () => {
-    selectedFiles = [];
-    fileInput.value = "";
-    fileList.innerHTML = "";
+    addFiles(Array.from(fileInput.files));
 });
 
 uploadBtn.addEventListener("click", (e) => {
@@ -135,6 +161,12 @@ uploadBtn.addEventListener("click", (e) => {
         e.preventDefault();
         alert(MAX_FILES_ALERT);
         fileInput.value = "";
+        return;
+    }
+
+    if (recorder && recorder.state === "recording") {
+        e.preventDefault();
+        alert(RECORDING_ALERT);
         return;
     }
 });

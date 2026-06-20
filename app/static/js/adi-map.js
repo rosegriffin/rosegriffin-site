@@ -37,8 +37,17 @@ function applyRegionsAndColors(regions, probabilities) {
             el.addEventListener("mousemove", (e) => {
                 tooltip.style.opacity = "1";
                 tooltip.textContent =`${region}: ${(p * 100).toFixed(1)}%`;
+
+                // default to bottom right
                 tooltip.style.left = `${e.clientX + 12}px`;
                 tooltip.style.top = `${e.clientY + 12}px`;
+
+                // check if overflowing
+                const rect = tooltip.getBoundingClientRect();
+
+                if (rect.right > window.innerWidth) {
+                    tooltip.style.left = `${e.clientX - rect.width - 12}px`;
+                }
             });
 
             el.addEventListener("mouseleave", () => {
