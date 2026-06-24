@@ -109,49 +109,67 @@ async function startRecording() {
     }
 
     if (!navigator.mediaDevices?.getUserMedia) {
-        alert(BROWSER_ALERT);
+        alert("Audio recording is not supported in this browser.\nPlease use the upload feature instead.");
         return;
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
 
-    recorder = new MediaRecorder(stream);
-    chunks = [];
+        recorder = new MediaRecorder(stream);
+        chunks = [];
 
-    recorder.ondataavailable = e => {
-        chunks.push(e.data);
-    };
+        recorder.ondataavailable = e => {
+            chunks.push(e.data);
+        };
 
-    recorder.onstop = async () => {
+        recorder.onstop = async () => {
 
-        recordingCount++;
+            recordingCount++;
 
-        const webmBlob = new Blob(chunks);
-        const arrayBuffer = await webmBlob.arrayBuffer();
-        const audioContext = new AudioContext();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const webmBlob = new Blob(chunks);
+            const arrayBuffer = await webmBlob.arrayBuffer();
+            const audioContext = new AudioContext();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-        const wavBlob = audioBufferToWav(audioBuffer);
-        const file = new File(
-            [wavBlob],
-            `recording-${recordingCount}.wav`,
-            { type: "audio/wav" }
-        );
+            const wavBlob = audioBufferToWav(audioBuffer);
+            const file = new File(
+                [wavBlob],
+                `recording-${recordingCount}.wav`,
+                { type: "audio/wav" }
+            );
 
-        addFiles([file]);
-    };
+            addFiles([file]);
+        };
 
-    recorder.start();
-    setRecordingState(true);
-    seconds = 0;
+        recorder.start();
+        setRecordingState(true);
+        seconds = 0;
 
-    timerInterval = setInterval(() => {
-        seconds++;
-        timer.textContent = `00:${String(seconds).padStart(2,"0")} / 00:10`;
-        if (seconds >= MAX_TIME) {
-            stopRecording();
+        timerInterval = setInterval(() => {
+            seconds++;
+            timer.textContent = `00:${String(seconds).padStart(2,"0")} / 00:10`;
+            if (seconds >= MAX_TIME) {
+                stopRecording();
+            }
+        }, 1000);
+    } catch (err) {
+        console.log(err.name, err);
+        switch (err.name) {
+            case "NotAllowedError":
+                alert("Microphone access was denied.\nPlease enable microphone access and try again.");
+                break;
+            case "NotFoundError":
+                alert("No microphone was detected.\nPlease connect a microphone and try again.");
+                break;
+            case "NotReadableError":
+                alert("Your microphone is unavailable or being used by another application.\nPlease close other apps using the microphone and try again.");
+                break;
+            default:
+                alert("Unable to access your microphone.\nPlease refresh the page and try again.");
+
         }
-    }, 1000);
+    }
 }
 
 function stopRecording() {
